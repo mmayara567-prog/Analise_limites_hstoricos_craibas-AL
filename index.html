@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Geoportal Territorial de Craíbas - AL | Análise dos Limites Históricos</title>
+  
+  <!-- Fontes Google (Plus Jakarta Sans para visual moderno e legível) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
+  <!-- Estilos Personalizados (Tons Pastéis: Verde, Laranja e Branco) -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- ==========================================================================
+       CABEÇALHO INSTITUCIONAL
+       ========================================================================== -->
+  <header class="geo-header">
+    <div class="header-brand-group">
+      <div class="header-logos">
+        <img src="assets/logos/logo_craibas.png" alt="Prefeitura Municipal de Craíbas" title="Prefeitura Municipal de Craíbas">
+        <img src="assets/logos/logo_planurbi.png" alt="PlanUrbi Craíbas" title="PlanUrbi Craíbas">
+        <img src="assets/logos/logo_fepesa.png" alt="FEPESA" title="FEPESA">
+      </div>
+      <div class="header-title-box">
+        <div class="app-badge">
+          <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+          </svg>
+          Série Histórica &bull; SIRGAS 2000
+        </div>
+        <h1>GEOPORTAL DE ANÁLISE DOS LIMITES HISTÓRICOS DE CRAÍBAS - AL</h1>
+        <p>Evolução Territorial (1872 &ndash; 2023), Malha Intermunicipal e Diagnóstico da Atuação Municipal</p>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn-header" id="btnOpenAbout">
+        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        Metodologia & História
+      </button>
+
+      <button class="btn-header" id="btnOpenDownload">
+        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+        </svg>
+        Baixar Dados
+      </button>
+
+      <button class="btn-header primary" id="btnPrintMap">
+        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+        </svg>
+        Imprimir Mapa
+      </button>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       CORPO PRINCIPAL (SIDEBAR + MAPA)
+       ========================================================================== -->
+  <main class="geo-main">
+
+    <!-- SIDEBAR MULTIFUNCIONAL -->
+    <aside class="geo-sidebar" id="geoSidebar">
+      <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" title="Recolher / Expandir Painel">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+
+      <!-- Navegação das Abas da Sidebar -->
+      <nav class="sidebar-nav-tabs">
+        <button class="tab-btn active" data-tab="timeline">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Linha do Tempo
+        </button>
+        <button class="tab-btn" data-tab="compare">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+          Comparador
+        </button>
+        <button class="tab-btn" data-tab="regional">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Regional & AL
+        </button>
+        <button class="tab-btn" data-tab="layers">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+          </svg>
+          Camadas
+        </button>
+      </nav>
+
+      <!-- Conteúdo da Sidebar -->
+      <div class="sidebar-content">
+
+        <!-- ABA 1: LINHA DO TEMPO (HISTÓRIA E EVOLUÇÃO) -->
+        <section class="sidebar-tab-pane active" id="pane-timeline">
+          
+          <div class="didactic-card highlight-green">
+            <div class="card-title-group">
+              <span class="card-title">
+                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                Período em Análise
+              </span>
+              <span class="card-badge green" id="timelinePanelBadge">Oficial IBGE Vigente</span>
+            </div>
+            <h3 id="timelinePanelTitle" style="font-size: 15px; font-weight: 800; color: var(--c-text-primary); margin-bottom: 6px;">
+              2023–Atual — Malha Municipal Oficial Vigente (IBGE 2023)
+            </h3>
+            <p class="card-text" id="timelinePanelSummary">
+              Malha territorial vigente de Craíbas de acordo com o Instituto Brasileiro de Geografia e Estatística (IBGE).
+            </p>
+
+            <div class="metric-grid">
+              <div class="metric-box">
+                <span class="metric-label">Área Territorial</span>
+                <span class="metric-val green" id="timelinePanelArea">279,38 km²</span>
+                <span class="metric-sub">Geodésico WGS84/SIRGAS</span>
+              </div>
+              <div class="metric-box">
+                <span class="metric-label">Perímetro</span>
+                <span class="metric-val" id="timelinePanelPerimeter">79,15 km</span>
+                <span class="metric-sub">Contorno oficial</span>
+              </div>
+            </div>
+
+            <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--c-border); font-size: 11px; color: var(--c-text-muted);">
+              <strong>Circunscrição / Entidade:</strong> <span id="timelinePanelEntity">Craíbas (Oficial IBGE)</span>
+            </div>
+          </div>
+
+          <div class="didactic-card">
+            <div class="card-title-group">
+              <span class="card-title">
+                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+                Contexto Histórico & Didático
+              </span>
+            </div>
+            <p class="card-text" id="timelinePanelContext">
+              Constitui o limite oficial utilizado para fins de repasse do Fundo de Participação dos Municípios (FPM), dados demográficos oficiais e planejamento estatístico federal.
+            </p>
+          </div>
+
+          <div class="didactic-card">
+            <div class="card-title-group">
+              <span class="card-title">
+                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                Evolução da Área (1872 &ndash; 2023)
+              </span>
+            </div>
+            <p class="card-text" style="font-size: 11.5px; margin-bottom: 8px;">
+              Visualização gráfica da redução e estabilização territorial desde a imensa circunscrição imperial de Anadia até Craíbas autônoma:
+            </p>
+            <div style="height: 170px; width: 100%;">
+              <canvas id="chartEvolucaoArea"></canvas>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- ABA 2: COMPARADOR (IBGE OFICIAL vs PREFEITURA) -->
+        <section class="sidebar-tab-pane" id="pane-compare">
+          <div class="didactic-card highlight-orange">
+            <div class="card-title-group">
+              <span class="card-title">
+                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                Diagnóstico de Limites
+              </span>
+              <span class="card-badge orange">Confronto Técnico</span>
+            </div>
+            <p class="card-text">
+              Comparativo entre a delimitação estatística oficial reconhecida pelo <strong>IBGE</strong> e a malha territorial estimada a partir da <strong>atuação e cadastros da Prefeitura Municipal de Craíbas</strong>.
+            </p>
+          </div>
+
+          <div class="comparator-box">
+            <div class="compare-card-row">
+              <div class="compare-stat-card ibge">
+                <span class="compare-title">IBGE 2023 (Oficial)</span>
+                <span class="compare-val" style="color: var(--c-green-accent);">279,38 km²</span>
+                <span class="compare-desc">Delimitação legal vigente do IBGE para transferências federais e censos.</span>
+              </div>
+              <div class="compare-stat-card prefeitura">
+                <span class="compare-title">Prefeitura (Estimado)</span>
+                <span class="compare-val" style="color: var(--c-orange-accent);">288,66 km²</span>
+                <span class="compare-desc">Malha decorrente dos cadastros municipais, postos de saúde e escolas.</span>
+              </div>
+            </div>
+
+            <!-- Card de Diferença Territorial -->
+            <div class="diff-highlight-card">
+              <div class="diff-header">
+                <strong>Diferença de Extensão Territorial:</strong>
+                <span class="diff-badge">+9,28 km² (+3,3%)</span>
+              </div>
+              <p class="diff-text">
+                A malha decorrente da atuação efetiva da Prefeitura é <strong>9,28 km² maior</strong> que a área oficial homologada pelo IBGE. Isso indica territórios e comunidades rurais assistidas por Craíbas que se situam fora do traçado federal.
+              </p>
+            </div>
+
+            <!-- Card da Área de Atuação Externa (2,24 km²) -->
+            <div class="area-externa-card">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <strong style="color: #C62828; font-size: 13px;">Polígono Crítico de Atuação Externa</strong>
+                <span style="background:#FFCDD2; color:#B71C1C; font-weight:800; font-size:11px; padding:2px 8px; border-radius:10px;">
+                  2,24 km²
+                </span>
+              </div>
+              <p style="font-size: 12px; color: #4A148C; line-height: 1.5;">
+                Localizada na divisa sul/sudoeste, esta área de <strong>2,24 km²</strong> recebe rotas contínuas de <em>transporte escolar municipal de Craíbas</em>, <em>atendimento dos Agentes Comunitários de Saúde (ACS)</em> e manutenção viária pela Prefeitura de Craíbas, embora o mapa do IBGE a atribua a município vizinho.
+              </p>
+              <button class="btn-zoom-conflict" id="btnZoomConflict">
+                <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                </svg>
+                Focar na Faixa de Conflito (2,24 km²)
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ABA 3: CONTEXTO REGIONAL & MALHA DE ALAGOAS -->
+        <section class="sidebar-tab-pane" id="pane-regional">
+          <div class="didactic-card">
+            <div class="card-title-group">
+              <span class="card-title">
+                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Contexto no Agreste Alagoano
+              </span>
+            </div>
+            <p class="card-text">
+              Craíbas está inserida na <strong>Região Geográfica Intermediária de Arapiraca</strong> e faz fronteira direta com municípios estratégicos do Agreste e Sertão de Alagoas.
+            </p>
+
+            <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; cursor: pointer;">
+                <input type="checkbox" id="toggleAllAlagoas">
+                <span>Carregar Todos os 102 Municípios de Alagoas</span>
+              </label>
+              <span style="font-size: 11px; color: var(--c-text-muted);">
+                Por padrão, são exibidos Craíbas e os municípios vizinhos confrontantes para máxima performance.
+              </span>
+            </div>
+          </div>
+
+          <div class="didactic-card">
+            <div class="card-title-group">
+              <span class="card-title">
+                Municípios Confrontantes
+              </span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px; font-size: 12px;">
+              <div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid var(--c-bg-subtle);">
+                <strong>Arapiraca</strong> <span>Polo Regional &bull; 351,47 km²</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid var(--c-bg-subtle);">
+                <strong>Girau do Ponciano</strong> <span>Confrontante Sul &bull; 502,15 km²</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid var(--c-bg-subtle);">
+                <strong>Lagoa da Canoa</strong> <span>Confrontante Sudeste &bull; 102,83 km²</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid var(--c-bg-subtle);">
+                <strong>Jaramataia</strong> <span>Confrontante Oeste &bull; 107,04 km²</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid var(--c-bg-subtle);">
+                <strong>Batalha</strong> <span>Confrontante Noroeste &bull; 320,93 km²</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid var(--c-bg-subtle);">
+                <strong>Igaci</strong> <span>Confrontante Leste &bull; 333,74 km²</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ABA 4: ÁRVORE DE CAMADAS E CONTROLE DE OPACIDADE -->
+        <section class="sidebar-tab-pane" id="pane-layers">
+          <div class="didactic-card">
+            <div class="card-title-group">
+              <span class="card-title">
+                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+                Controle de Camadas & Opacidade
+              </span>
+            </div>
+            <p class="card-text" style="font-size: 11.5px;">
+              Ative ou desative qualquer época da série histórica e regule a transparência das geometrias para sobreposição analítica:
+            </p>
+          </div>
+
+          <div class="layer-group" id="layerTreeContainer">
+            <!-- Camadas inseridas dinamicamente via JS -->
+          </div>
+        </section>
+
+      </div>
+    </aside>
+
+    <!-- CONTAINER DO MAPA -->
+    <div class="geo-map-container">
+      <div id="map"></div>
+
+      <!-- Barra Flutuante de Ferramentas Cartográficas -->
+      <div class="map-floating-toolbar">
+        
+        <!-- Dropdown de Mapas-Base -->
+        <div class="basemap-dropdown">
+          <button class="btn-tool" id="btnBasemapDropdown" title="Alternar Mapa-Base">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+            </svg>
+            Mapa-Base
+          </button>
+          
+          <div class="basemap-menu" id="basemapMenu">
+            <button class="basemap-option active" data-basemap="esriGray">
+              <span class="basemap-thumb" style="background:#E2E8F0; display:inline-block;"></span>
+              <span>Esri Canvas Claro (Tons Pastéis)</span>
+            </button>
+            <button class="basemap-option" data-basemap="osm">
+              <span class="basemap-thumb" style="background:#CBD5E1; display:inline-block;"></span>
+              <span>OpenStreetMap Padrão</span>
+            </button>
+            <button class="basemap-option" data-basemap="satellite">
+              <span class="basemap-thumb" style="background:#334155; display:inline-block;"></span>
+              <span>Satélite de Alta Resolução</span>
+            </button>
+            <button class="basemap-option" data-basemap="topo">
+              <span class="basemap-thumb" style="background:#A7F3D0; display:inline-block;"></span>
+              <span>Relevo e Topografia</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="tool-divider"></div>
+
+        <!-- Barra de Busca de Endereço / Coordenadas -->
+        <div class="map-search-bar">
+          <input type="text" id="mapSearchInput" placeholder="Buscar local ou coordenadas...">
+          <button id="mapSearchBtn" title="Pesquisar">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="tool-divider"></div>
+
+        <!-- Ferramentas de Medição -->
+        <div class="tool-group">
+          <button class="btn-tool" id="btnMeasureDistance" title="Medir Distância (km/m)">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+            </svg>
+            Distância
+          </button>
+          <button class="btn-tool" id="btnMeasureArea" title="Medir Área Poligonal (km²/ha)">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+            Área
+          </button>
+          <button class="btn-tool" id="btnClearMeasure" title="Limpar Medições">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="tool-divider"></div>
+
+        <!-- Botão Centralizar em Craíbas -->
+        <button class="btn-tool" id="btnFitCraibas" title="Centralizar Mapa em Craíbas">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          </svg>
+          Craíbas
+        </button>
+
+      </div>
+
+      <!-- Player Interativo da Linha do Tempo (Inferior) -->
+      <div class="timeline-player-container" id="timelinePlayerContainer">
+        <div class="timeline-header">
+          <div class="timeline-title-group">
+            <div class="timeline-controls">
+              <button class="btn-timeline-ctrl" id="btnTimelinePrev" title="Época Anterior">
+                <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/>
+                </svg>
+              </button>
+              <button class="btn-timeline-ctrl btn-play" id="btnTimelinePlay" title="Reproduzir Linha do Tempo">
+                <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              </button>
+              <button class="btn-timeline-ctrl" id="btnTimelineNext" title="Próxima Época">
+                <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/>
+                </svg>
+              </button>
+            </div>
+
+            <strong>
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Linha do Tempo
+            </strong>
+            <span class="timeline-epoch-badge" id="timelineEpochBadge">2023-Atual &bull; Oficial IBGE</span>
+          </div>
+
+          <div class="timeline-epoch-details" id="timelineEpochDetails">
+            <span id="timelineDetailEntity">Craíbas (Oficial IBGE)</span>
+            <span>&bull;</span>
+            <span>Área: <strong id="timelineDetailArea">279,38 km²</strong></span>
+            <span>&bull;</span>
+            <span>Perímetro: <strong id="timelineDetailPerim">79,15 km</strong></span>
+          </div>
+        </div>
+
+        <div class="timeline-slider-wrapper">
+          <input type="range" class="timeline-slider" id="timelineSlider" min="0" max="10" step="1" value="10">
+          <div class="timeline-ticks">
+            <span class="timeline-tick" data-index="0">1872<br><small>Anadia</small></span>
+            <span class="timeline-tick" data-index="1">1900<br><small>Limoeiro</small></span>
+            <span class="timeline-tick" data-index="2">1915<br><small>Limoeiro</small></span>
+            <span class="timeline-tick" data-index="3">1940<br><small>Arapiraca</small></span>
+            <span class="timeline-tick" data-index="4">1960<br><small>Arapiraca</small></span>
+            <span class="timeline-tick" data-index="5">1975<br><small>Arapiraca</small></span>
+            <span class="timeline-tick" data-index="6">1991<br><small>Craíbas</small></span>
+            <span class="timeline-tick" data-index="7">2005<br><small>IBGE</small></span>
+            <span class="timeline-tick" data-index="8">2010<br><small>Censo</small></span>
+            <span class="timeline-tick" data-index="9">2018<br><small>Revisão</small></span>
+            <span class="timeline-tick active" data-index="10">2023<br><small>Oficial</small></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Legenda Cartográfica Flutuante (Canto Inferior Direito) -->
+      <div class="floating-map-legend" id="floatingMapLegend">
+        <div class="legend-card-popover" id="legendCardPopover">
+          <div class="legend-header">
+            <span>Legenda Cartográfica</span>
+            <button class="modal-close-btn" id="btnCloseLegend" style="width:20px; height:20px;">
+              <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <div class="legend-list">
+            <div class="legend-row">
+              <span class="legend-swatch" style="background:#7BB886; border-color:#2E7D32;"></span>
+              <span><strong>Oficial IBGE (2023)</strong> (279,38 km²)</span>
+            </div>
+            <div class="legend-row">
+              <span class="legend-swatch dashed" style="background:#F7A873; border-color:#DE7534;"></span>
+              <span><strong>Prefeitura (Estimado)</strong> (288,66 km²)</span>
+            </div>
+            <div class="legend-row">
+              <span class="legend-swatch dashed" style="background:#FF8A80; border-color:#C62828;"></span>
+              <span><strong>Área Externa Atendida</strong> (2,24 km²)</span>
+            </div>
+            <div class="legend-row">
+              <span class="legend-swatch" style="background:#D1C4E9; border-color:#673AB7;"></span>
+              <span><strong>Série Histórica</strong> (1872 a 2022)</span>
+            </div>
+            <div class="legend-row">
+              <span class="legend-swatch" style="background:#E2E8F0; border-color:#94A3B8;"></span>
+              <span><strong>Confrontantes do Agreste</strong></span>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-toggle-legend" id="btnToggleLegend" title="Exibir Legenda">
+          <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+          </svg>
+          Legenda
+        </button>
+      </div>
+
+      <!-- Rodapé com Coordenadas em Tempo Real -->
+      <div class="map-footer-coords" id="mapCoordsFooter">
+        Lat: -9.61800 | Lon: -36.76800 | Zoom: 11 | SIRGAS 2000
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ==========================================================================
+       MODAL 1: SOBRE O ESTUDO E METODOLOGIA DIDÁTICA
+       ========================================================================== -->
+  <div class="geo-modal-overlay" id="modalAbout">
+    <div class="geo-modal">
+      <div class="modal-header">
+        <h2>
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          </svg>
+          Sobre o Geoportal Territorial de Craíbas
+        </h2>
+        <button class="modal-close-btn" id="btnCloseAbout">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <p>
+          Este Geoportal foi desenvolvido como instrumento de <strong>planejamento territorial, diagnóstico técnico e difusão didática</strong> da história de conformação espacial do Município de Craíbas, no Agreste de Alagoas.
+        </p>
+
+        <h3>1. Fases Históricas da Malha Territorial</h3>
+        <p>
+          A evolução dos limites de Craíbas reflete a própria história política do Estado de Alagoas:
+        </p>
+        <ul style="padding-left: 20px; display: flex; flex-direction: column; gap: 6px;">
+          <li><strong>1872 (Império):</strong> Todo o Agreste pertencia à extensa Comarca de Anadia (2.419 km²).</li>
+          <li><strong>1879–1920 (República Velha):</strong> Com a criação de Limoeiro de Anadia, Craíbas passou à jurisdição de Limoeiro.</li>
+          <li><strong>1924–1982 (Distrito de Arapiraca):</strong> Arapiraca emancipa-se e Craíbas se consolida como seu maior e mais produtivo distrito agropecuário.</li>
+          <li><strong>1982 (Emancipação Política):</strong> Lei Estadual nº 4.394 de 23 de abril de 1982 eleva Craíbas a município autônomo, figurando pela primeira vez individualmente no Censo Demográfico de 1991.</li>
+        </ul>
+
+        <h3>2. O Dilema Contemporâneo: Limite IBGE vs. Atuação Real</h3>
+        <p>
+          O geoportal evidencia a existência de uma área de <strong>2,24 km²</strong> na divisa com municípios confrontantes onde a Prefeitura de Craíbas presta serviços essenciais contínuos (saúde da família, rotas escolares e saneamento), embora cartograficamente esteja delimitada pelo IBGE em município vizinho. A área estimada pela Prefeitura alcança <strong>288,66 km²</strong>, frente aos <strong>279,38 km²</strong> do IBGE oficial.
+        </p>
+
+        <h3>3. Realização e Apoio Institucional</h3>
+        <p>
+          Trabalho conjunto promovido pelo <strong>PlanUrbi Craíbas</strong>, <strong>Prefeitura Municipal de Craíbas</strong> e <strong>FEPESA</strong> (Fundação de Estudos e Pesquisas Socioeconômicos).
+        </p>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-header primary" onclick="document.getElementById('modalAbout').classList.remove('show');">
+          Fechar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL 2: DOWNLOAD DE DADOS VETORIAIS
+       ========================================================================== -->
+  <div class="geo-modal-overlay" id="modalDownload">
+    <div class="geo-modal">
+      <div class="modal-header">
+        <h2>
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          Download dos Dados Geográficos (GeoJSON)
+        </h2>
+        <button class="modal-close-btn" id="btnCloseDownload">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <p>
+          Todos os arquivos da série histórica e de diagnóstico territorial estão disponíveis na pasta do projeto em formato padrão aberto <code>.geojsonl</code> e <code>.qmd</code> (Metadados do QGIS).
+        </p>
+
+        <div class="download-grid">
+          <div class="download-item">
+            <div class="download-info">
+              <strong>Limite Oficial Vigente (IBGE 2023)</strong>
+              <span>2023-Atual.geojsonl &bull; 279,38 km²</span>
+            </div>
+            <a href="2023-Atual.geojsonl" download class="btn-header">Baixar</a>
+          </div>
+
+          <div class="download-item">
+            <div class="download-info">
+              <strong>Limite Municipal Estimado (Prefeitura)</strong>
+              <span>Limite municipal estimado a partir de informações da Prefeitura.geojsonl &bull; 288,66 km²</span>
+            </div>
+            <a href="Limite municipal estimado a partir de informações da Prefeitura.geojsonl" download class="btn-header">Baixar</a>
+          </div>
+
+          <div class="download-item">
+            <div class="download-info">
+              <strong>Área de Atuação Municipal Externa (Faixa de Conflito)</strong>
+              <span>Área de atuação municipal indicada pela Prefeitura, externa ao limite territorial oficial..geojsonl &bull; 2,24 km²</span>
+            </div>
+            <a href="Área de atuação municipal indicada pela Prefeitura, externa ao limite territorial oficial..geojsonl" download class="btn-header accent">Baixar</a>
+          </div>
+
+          <div class="download-item">
+            <div class="download-info">
+              <strong>Malha Municipal Completa de Alagoas</strong>
+              <span>Malha Municipal de Alagoas.geojsonl &bull; 102 Municípios</span>
+            </div>
+            <a href="Malha Municipal de Alagoas.geojsonl" download class="btn-header">Baixar</a>
+          </div>
+
+          <div class="download-item">
+            <div class="download-info">
+              <strong>Série Histórica Completa (1872 &ndash; 2022)</strong>
+              <span>Arquivos 1872, 1900, 1911-20, 1933-50, 1960, 1970-80, 1991, 2000-07, 2010-13, 2014-22</span>
+            </div>
+            <a href="1872.geojsonl" download class="btn-header">1872</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-header primary" onclick="document.getElementById('modalDownload').classList.remove('show');">
+          Fechar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <!-- Chart.js para os gráficos interativos -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- Dados Cartográficos Pré-Compilados em Alta Resolução -->
+  <script src="data/layers_craibas.js"></script>
+  <script src="data/malha_vizinhos.js"></script>
+  <script src="data/malha_alagoas.js"></script>
+
+  <!-- Script Principal da Aplicação -->
+  <script src="js/app.js"></script>
+</body>
+</html>
